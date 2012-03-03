@@ -1,0 +1,29 @@
+Nagios dual check
+~~~~~~~~~~~~~~~~~
+Files:
+  check_dual.pl
+
+Description:
+	It is often necessary to run checks on a host with dual IP address. The
+	check_dual.pl is an attempt to simplify this task. The Nagios config is allow
+	us to write anything in a 'define host' 'address' directive. Let's write both
+	address sperated by comma and similarly to the check_nrpe stanza, use the
+	check_dual command as described below.
+
+	define host {
+		host_name		host1
+		address			1.2.3.4,5.6.7.8
+		check_command check_dual|check_ping|
+		...
+	}
+
+	define command {
+		command_name	check_dual
+		command_line	/usr/local/nagios/libexec/check_dual.pl -H $HOSTADDRESS$ -c $ARG1$ "\$ARG2$ $ARG3$ $ARG4$ $ARG5$"
+	}
+
+	check_dual.pl itself contains two truth table for calculating the resulting
+	state. One of those check that both of them have to be ok (eg. check_ping
+	have to be ok for both ip address of the host), the other is those that one
+	of them working is ok (eg. NRPE disk_check on a host is ok, even if ok via on
+	of the address of the host).
