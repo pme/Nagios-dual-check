@@ -80,12 +80,12 @@ sub usage
 check_dual.pl - runs the same check for two IP addresses
 Version: $version, Copyright (C) 2012 Peter Meszaros <hauptadler\@gmail.com>
 
-Usage: $0 -H ip1,ip2 [-1] [-t] [-h] -c command ["\\-a p1 -b p2"]
+Usage: $0 -H ip1,ip2 [-1] [-t] [-h] -c command -- -a p1 -b p2
 
 \t-H ipaddresses separated by comma
 \t-1 one of two mode
 \t-t trace
-\t-c check to execute (the very first command line switch mus be preceeded with '\\')
+\t-c check to execute (the very first command line switch must be preceeded with '--')
 \t-h prints this message
 EOD
 }
