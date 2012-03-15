@@ -24,6 +24,7 @@ use Getopt::Std;
 our($opt_H, $opt_c, $opt_1, $opt_t, $opt_h);
 
 my $version = '0.1';
+my $libexec = '/usr/local/nagios/libexec/';
 
 use constant {
   OK       => 0, # Luckily the Nagios status values are numbered from 0 to 3.
@@ -62,7 +63,7 @@ my @ips = split(',', $opt_H);
 my @crets;
 foreach (@ips) {
 	print "$opt_c -H $_ @ARGV\n" if $opt_t;
-	chomp(my $r = `$opt_c -H $_ @ARGV`);
+	chomp(my $r = `$libexec/$opt_c -H $_ @ARGV`);
 	push(@crets, $? >> 8);
 	$retstr .= $r . ' ';
 }
