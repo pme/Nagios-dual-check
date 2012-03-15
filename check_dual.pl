@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# nagios: -epn
 #
 # check_dual.pl - runs the same check for two IP addresses
 # Copyright (C) 2012 Peter Meszaros <hauptadler@gmail.com>
