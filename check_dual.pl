@@ -23,7 +23,8 @@ use Getopt::Std;
 
 our($opt_H, $opt_c, $opt_1, $opt_t, $opt_h);
 
-my $version = '0.1';
+my $version = '0.2';
+
 my $libexec = '/usr/local/nagios/libexec/';
 
 use constant {
@@ -35,7 +36,7 @@ use constant {
 
 my @statestr = qw(OK WARNING CRITICAL UNKNOWN);
 
-my ($ret, $retstr);
+my ($ret, $retstr, $retprf);
 
              # Truth table for the 2of2 checks
              # OK       WARNING   CRITICAL  UNKOWN
@@ -61,16 +62,30 @@ if (!defined($opt_H) || !defined($opt_c)) {
 my @ips = split(',', $opt_H);
 
 my @crets;
+my $n = 1;
 foreach (@ips) {
 	print "$opt_c -H $_ @ARGV\n" if $opt_t;
 	chomp(my $r = `$libexec/$opt_c -H $_ @ARGV`);
 	push(@crets, $? >> 8);
-	$retstr .= $r . ' ';
+  print "ret: $r\n" if $opt_t;
+  my ($s, $p) = split(/\|/, $r);
+  # collect status
+	$retstr .= $s . ' ';
+  # collect performance
+  if (!($opt_1 && ($n > 1))) {
+    my @l = split(' ', $p);
+    foreach (@l) {
+      s/(.+)=/${1}_$n=/;
+    }
+    $p = join(' ', @l);
+	  $retprf .= $p . ' ';
+    $n++;
+  }
 }
 
 $ret = $opt_1 ? $tt1o2[$crets[0]][$crets[1]] : $tt2o2[$crets[0]][$crets[1]];
 
-print "$statestr[$ret] - $retstr\n";
+print "$statestr[$ret] - $retstr|$retprf\n";
 
 exit $ret;
 
