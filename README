@@ -1,6 +1,7 @@
 Nagios dual check
 ~~~~~~~~~~~~~~~~~
 2012.03.04. Still in experimental state!
+2012.03.15. Version: 0.2, source modifications (see the repo), Nagios config examples
 
 Files:
   check_dual.pl
@@ -10,27 +11,56 @@ Description:
 	check_dual.pl is an attempt to simplify this task. The Nagios config is allow
 	us to write anything in a 'define host' 'address' directive. Let's write both
 	addresses separated by comma and similarly to the check_nrpe stanza, use the
-	check_dual command as described below.
+	check_dual and check_dual_1 commands as described below.
 
-	define host {
-		host_name		host1
-		address			1.2.3.4,5.6.7.8
-		check_command check_dual!$USER1$/check_ping!-w 100.0,20%!-c 500.0,60%
-		...
+  # commands
+	define command {
+		command_name		check_dual
+		command_line		$USER1$/check_dual.pl -H $HOSTADDRESS$ -c $ARG1$ -- $ARG2$ $ARG3$ $ARG4$ $ARG5$ $ARG6$ $ARG7$ $ARG8$ $ARG9$ 
 	}
 
 	define command {
-		command_name	check_dual
-		command_line	/usr/local/nagios/libexec/check_dual.pl -H $HOSTADDRESS$ -c $ARG1$ -- \
-		  $ARG2$ $ARG3$ $ARG4$ $ARG5$ $ARG6$ $ARG7$ $ARG8$ $ARG9$
+		command_name		check_dual_1
+		command_line		$USER1$/check_dual.pl -H $HOSTADDRESS$ -1 -c check_nrpe -- -c $ARG1$ $ARG2$ $ARG3$ $ARG4$ $ARG5$ $ARG6$ $ARG7$ $ARG8$ $ARG9$ 
+	}
+  ...
+  # dual host template
+	define host {
+		use									generic-host
+		name								dual-host
+		check_command				check_dual!check_ping!-w!3000.0,50%!-c!5000.0,70%!-p!5
+		register						0
+	}
+  ...
+  # host definition
+	define host {
+		use             dual-host,host-pnp
+		host_name				xxxxx
+		address					10.134.68.7,10.134.69.7
+	}        
+  ...
+  # dual check definition
+	define service {
+		host_name						xxxxx
+		service_description	SSH
+		check_command		    check_dual!check_ssh
+	}
+  # single check definition
+	define service {
+		host_name						xxxxx
+		service_description	users
+		check_command		    check_dual_1!check_users
 	}
 
 	check_dual.pl itself contains two truth table to calculate the resulting
 	state. There are two kind of checks:
-		'one of two' - usually nrpe checks, these checks are ok even if they can be
-		               done through only one of the ip addresses. eg. check_nrpe!check_disk
+		'one of two' - usually nrpe checks ('-1' command line args), these checks
+									 are ok even if they can be done through only one of the ip
+									 addresses. eg. check_nrpe!check_disk
 		'two of two' - check on both ip address should be ok. eg. check_ping of the
 		               hosts's ip addresses.
   See the truth tables in check_dual.pl source.
+
+-----------------------------------------------------------------------------------
 
 
